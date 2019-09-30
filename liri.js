@@ -98,6 +98,14 @@ function song(input) {
         console.log("Song name: " + data.tracks.items[0].name);
         console.log("Preview mp3: " + data.tracks.items[0].preview_url);
         console.log("Album name: " + data.tracks.items[0].album.name);
+
+        // Log the data to 'log.txt'
+        var text = "Artist(s): " + artist + "\nSong name: " + data.tracks.items[0].name + "\nPreview mp3: " + data.tracks.items[0].preview_url + "\nAlbum name: " + data.tracks.items[0].album.name + '\n\n';
+        fs.appendFile("log.txt", text, function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
     });
 };
 
