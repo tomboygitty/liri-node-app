@@ -40,8 +40,32 @@ function concert(input) {
     .then(function(response) {
         console.log("The next upcoming show for " + artist + " is the following:");
         console.log(response.data[0].venue.name);
-        console.log(response.data[0].venue.city + ", " + response.data[0].venue.region + ", " + response.data[0].venue.country);
+        if (response.data[0].venue.region===""||(typeof(response.data[0].venue.region))==="undefined") {
+            console.log(response.data[0].venue.city + ", " + response.data[0].venue.country);
+        }
+        else {
+            console.log(response.data[0].venue.city + ", " + response.data[0].venue.region + ", " + response.data[0].venue.country);
+        }
         console.log(moment(response.data[0].datetime).format("MM/DD/YYYY"));
+
+        // Log the data to 'log.txt'
+        // Validate proper output; some don't have 'region' for venue
+        if (response.data[0].venue.region===""||(typeof(response.data[0].venue.region))==="undefined") {
+            var text = "The next upcoming show for " + artist + " is the following:\n" + response.data[0].venue.name + '\n' + response.data[0].venue.city + ", " + response.data[0].venue.country + '\n' + (moment(response.data[0].datetime).format("MM/DD/YYYY")) + '\n\n';
+            fs.appendFile("log.txt", text, function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+        else {
+            var text = "The next upcoming show for " + artist + " is the following:\n" + response.data[0].venue.name + '\n' + response.data[0].venue.city + ", " + response.data[0].venue.region + ", " + response.data[0].venue.country + '\n' + (moment(response.data[0].datetime).format("MM/DD/YYYY")) + '\n\n';
+            fs.appendFile("log.txt", text, function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
     })
     .catch(function(error) {
         console.log('Error occurred: ' + error);
@@ -106,7 +130,7 @@ function movie(input) {
 // Function to read input from a local file named 'random.txt'
 function doWhat() {
     var dataArr = [];
-    
+
     // FS ReadFile call
     fs.readFile("random.txt", "utf8", function(error, data) {
         if (error) {
