@@ -1,6 +1,5 @@
-require("dotenv").config();
-
 // Create requires for npm
+require("dotenv").config();
 var keys = require("./keys.js");
 var spotifyAPI = require("node-spotify-api");
 var axios = require("axios");
@@ -51,7 +50,7 @@ function concert(input) {
         // Log the data to 'log.txt'
         // Validate proper output; some don't have 'region' for venue
         if (response.data[0].venue.region===""||(typeof(response.data[0].venue.region))==="undefined") {
-            var text = "The next upcoming show for " + artist + " is the following:\n" + response.data[0].venue.name + '\n' + response.data[0].venue.city + ", " + response.data[0].venue.country + '\n' + (moment(response.data[0].datetime).format("MM/DD/YYYY")) + '\n\n';
+            var text = "concert-this " + input + "\n-------------\nThe next upcoming show for " + artist + " is the following:\n" + response.data[0].venue.name + '\n' + response.data[0].venue.city + ", " + response.data[0].venue.country + '\n' + (moment(response.data[0].datetime).format("MM/DD/YYYY")) + '\n\n';
             fs.appendFile("log.txt", text, function(err) {
                 if (err) {
                     console.log(err);
@@ -59,10 +58,10 @@ function concert(input) {
             });
         }
         else {
-            var text = "The next upcoming show for " + artist + " is the following:\n" + response.data[0].venue.name + '\n' + response.data[0].venue.city + ", " + response.data[0].venue.region + ", " + response.data[0].venue.country + '\n' + (moment(response.data[0].datetime).format("MM/DD/YYYY")) + '\n\n';
+            var text = "concert-this " + input + "\n--------------------\nThe next upcoming show for " + artist + " is the following:\n" + response.data[0].venue.name + '\n' + response.data[0].venue.city + ", " + response.data[0].venue.region + ", " + response.data[0].venue.country + '\n' + (moment(response.data[0].datetime).format("MM/DD/YYYY")) + '\n\n';
             fs.appendFile("log.txt", text, function(err) {
                 if (err) {
-                    console.log(err);
+                    console.log('Error occured: ' + err);
                 }
             });
         }
@@ -100,10 +99,10 @@ function song(input) {
         console.log("Album name: " + data.tracks.items[0].album.name);
 
         // Log the data to 'log.txt'
-        var text = "Artist(s): " + artist + "\nSong name: " + data.tracks.items[0].name + "\nPreview mp3: " + data.tracks.items[0].preview_url + "\nAlbum name: " + data.tracks.items[0].album.name + '\n\n';
+        var text = "spotify-this-song " + input + "\n--------------------\nArtist(s): " + artist + "\nSong name: " + data.tracks.items[0].name + "\nPreview mp3: " + data.tracks.items[0].preview_url + "\nAlbum name: " + data.tracks.items[0].album.name + '\n\n';
         fs.appendFile("log.txt", text, function(err) {
             if (err) {
-                console.log(err);
+                console.log('Error occured: ' + err);
             }
         });
     });
@@ -129,6 +128,14 @@ function movie(input) {
             console.log("Language: " + response.data.Language);
             console.log("Plot: " + response.data.Plot);
             console.log("Actors: " + response.data.Actors);
+
+            // Log the data to 'log.txt'
+            var text = "movie-this " + input + "\n--------------------\nMovie name: " + response.data.Title + "\nRelease Year: " + response.data.Year + "\nIMDB Rating: " + response.data.Ratings[0].Value + "\nRotten Tomatoes Rating: " + response.data.Ratings[1].Value + "\nCountry the movie was produced: " + response.data.Country + "\nLanguage: " + response.data.Language + "\nPlot: " + response.data.Plot + "\nActors: " + response.data.Actors + '\n\n';
+            fs.appendFile("log.txt", text, function(err) {
+                if (err) {
+                    console.log('Error occured: ' + err);
+                }
+            });
         })
         .catch(function(error) {
             console.log('Error occured: ' + error);
@@ -147,7 +154,23 @@ function doWhat() {
         else {
             // Split the string from the file that is formatted [command,"input"] into an array
             dataArr = data.split(",");
-            master(dataArr[0], dataArr[1]);
+
+            // Validate proper input for arguments that have multiple commas (song titles, etc)
+            if (dataArr.length > 2) {
+                var concat = "";
+                for (var i = 1; i < dataArr.length; i++) {
+                    if (i == dataArr.length - 1) {
+                        concat = concat + dataArr[i];
+                    }
+                    else {
+                        concat = concat + dataArr[i] + ',';
+                    }
+                }
+                master(dataArr[0], concat);
+            }
+            else {
+                master(dataArr[0], dataArr[1]);
+            }
         }
     });
 };
