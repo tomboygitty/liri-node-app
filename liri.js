@@ -1,31 +1,39 @@
 require("dotenv").config();
 
+// Create requires for npm
 var keys = require("./keys.js");
 var spotifyAPI = require("node-spotify-api");
 var axios = require("axios");
 var moment = require("moment");
+var fs = require("fs");
 
+
+// Create spotify variable with our own ID and secret for authorization
 var spotify = new spotifyAPI(keys.spotify);
 
-switch (process.argv[2]) {
-    case "concert-this": concert();
-    break;
+// Function for switch method for taking node input
+function master(command, input) {
+    switch (command) {
+        case "concert-this": concert(input);
+        break;
 
-    case "spotify-this-song": song();
-    break;
- 
-    case "movie-this": movie();
-    break;
- 
-    case "do-what-it-says": doWhat();
-    break;
+        case "spotify-this-song": song(input);
+        break;
+    
+        case "movie-this": movie(input);
+        break;
+    
+        case "do-what-it-says": doWhat();
+        break;
 
-    default: console.log("Please provide a proper input.");
-    break;
+        default: console.log("Please provide a proper input.");
+        break;
+    }
 }
 
-function concert() {
-    var artist = process.argv[3];
+// Function for Axios call to Bandsintown API
+function concert(input) {
+    var artist = input;
     var queryURL = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp&date=upcoming";
 
     axios.get(queryURL)
@@ -38,13 +46,14 @@ function concert() {
     .catch(function(error) {
         console.log('Error occurred: ' + error);
     });
-}
+};
 
-function song() {
-    var song = process.argv[3];
+// Function for Node-Spotify-API call
+function song(input) {
+    var song = input;
     var artist = "";
 
-    if (typeof(process.argv[3]) === "undefined") {
+    if (typeof(input) === "undefined") {
         song = "Ace of Base The Sign";
     }
 
@@ -66,12 +75,13 @@ function song() {
         console.log("Preview mp3: " + data.tracks.items[0].preview_url);
         console.log("Album name: " + data.tracks.items[0].album.name);
     });
-}
+};
 
-function movie() {
-    var movieName = process.argv[3];
+// Function for Axios call to OMDB API
+function movie(input) {
+    var movieName = input;
 
-    if (typeof(process.argv[3]) === "undefined") {
+    if (typeof(input) === "undefined") {
         movieName = "Mr. Nobody";
     }
 
@@ -79,16 +89,35 @@ function movie() {
 
     axios.get(queryUrl).then(
         function(response) {
-            console.log("Movie name: " + response.data.Year);
+            console.log("Movie name: " + response.data.Title);
             console.log("Release Year: " + response.data.Year);
-            console.log("IMDB Rating: " + response.data.Year);
-            console.log("Rotten Tomatoes Rating: " + response.data.Year);
-            console.log("Country the movie was produced: " + response.data.Year);
-            console.log("Language: " + response.data.Year);
-            console.log("Plot: " + response.data.Year);
-            console.log("Actors: " + response.data.Year);
+            console.log("IMDB Rating: " + response.data.Ratings[0].Value);
+            console.log("Rotten Tomatoes Rating: " + response.data.Ratings[1].Value);
+            console.log("Country the movie was produced: " + response.data.Country);
+            console.log("Language: " + response.data.Language);
+            console.log("Plot: " + response.data.Plot);
+            console.log("Actors: " + response.data.Actors);
         })
         .catch(function(error) {
             console.log('Error occured: ' + error);
         });
-}
+};
+
+// Function to read input from a local file named 'random.txt'
+function doWhat() {
+    var dataArr = [];
+    
+    // FS ReadFile call
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        if (error) {
+          return console.log(error);
+        }
+        else {
+            // Split the string from the file that is formatted [command,"input"] into an array
+            dataArr = data.split(",");
+            master(dataArr[0], dataArr[1]);
+        }
+    });
+};
+
+master(process.argv[2], process.argv[3]);
